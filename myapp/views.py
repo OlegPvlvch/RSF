@@ -3,16 +3,16 @@ from .models import (
     Company, Job, Worker,
     WorkPlace, WorkTime)
 from .serializers import (
-    CompaniesListSerializer,
-    CompanyDetailsSerializer, 
-    JobCreateSerializer,
-    WorkerListSerializer,
-    WorkPlaceListSerializer,
-    WorkPlaceSerializer,
-    WorkTimeSerializer)
+    CompaniesListSerializer, CompanyDetailsSerializer, 
+    JobCreateSerializer, JobListSerializer,
+    WorkerListSerializer, WorkPlaceListSerializer,
+    WorkPlaceSerializer, WorkTimeSerializer)
+from rest_framework.permissions import IsAuthenticated 
+
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -27,18 +27,20 @@ class WorkerViewSet(viewsets.ModelViewSet):
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
-    serializer_class = JobCreateSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return JobCreateSerializer
+        return JobListSerializer
 
 
 class WorkPlaceViewSet(viewsets.ModelViewSet):
-
+    queryset = WorkPlace.objects.all()
+    
     def get_serializer_class(self):
         if self.action == 'list':
             return WorkPlaceListSerializer
         return WorkPlaceSerializer
-
-    queryset = WorkPlace.objects.all()
-    serializer_class = WorkPlaceSerializer
 
 
 class WorkTimeViewSet(viewsets.ModelViewSet):

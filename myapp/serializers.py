@@ -1,6 +1,15 @@
 from rest_framework import serializers
 
-from .models import Company, Job, Worker, WorkPlace, WorkTime
+from .models import (
+    Company, Job, Worker, WorkPlace,
+    WorkTime, Manager)
+
+
+class ManagerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manager
+        fields = ('id', 'name')
+
 
 class CompaniesListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +17,7 @@ class CompaniesListSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 class CompanyDetailsSerializer(serializers.ModelSerializer):
-    managers = serializers.StringRelatedField(many=True)
+    managers = ManagerSerializer(many=True)
     jobs = serializers.StringRelatedField(many=True)
     class Meta:
         model = Company
@@ -21,8 +30,13 @@ class WorkerListSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
+class JobListSerializer(serializers.ModelSerializer):
+    company = CompaniesListSerializer()
+    class Meta:
+        model = Job
+        fields = ('id', 'name', 'company')
+
 class JobCreateSerializer(serializers.ModelSerializer):
-    company = CompaniesListSerializer
     class Meta:
         model = Job
         fields = ('id', 'name', 'company')
@@ -31,9 +45,10 @@ class JobCreateSerializer(serializers.ModelSerializer):
 class WorkPlaceListSerializer(serializers.ModelSerializer):
     job = serializers.StringRelatedField()
     worker = serializers.StringRelatedField()
+    company = serializers.ReadOnlyField(source='job.company.name')
     class Meta:
         model = WorkPlace
-        fields = ('id', 'job', 'worker', 'status')
+        fields = ('id', 'company', 'job', 'worker', 'status')
 
 class WorkPlaceSerializer(serializers.ModelSerializer):
     class Meta:
